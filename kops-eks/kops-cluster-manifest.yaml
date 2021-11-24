@@ -1,0 +1,157 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2021-11-23T14:59:16Z"
+  name: kops-m2m-cluster.k8s.local
+spec:
+  api:
+    loadBalancer:
+      class: Network
+      type: Public
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudProvider: aws
+  configBase: __BUCKET_NAME__/kops-m2m-cluster.k8s.local
+  containerRuntime: containerd
+  etcdClusters:
+  - cpuRequest: 200m
+    etcdMembers:
+    - encryptedVolume: true
+      instanceGroup: master-us-east-1a-1
+      name: a-1
+    - encryptedVolume: true
+      instanceGroup: master-us-east-1b-1
+      name: b-1
+    - encryptedVolume: true
+      instanceGroup: master-us-east-1a-2
+      name: a-2
+    memoryRequest: 100Mi
+    name: main
+  - cpuRequest: 100m
+    etcdMembers:
+    - encryptedVolume: true
+      instanceGroup: master-us-east-1a-1
+      name: a-1
+    - encryptedVolume: true
+      instanceGroup: master-us-east-1b-1
+      name: b-1
+    - encryptedVolume: true
+      instanceGroup: master-us-east-1a-2
+      name: a-2
+    memoryRequest: 100Mi
+    name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubelet:
+    anonymousAuth: false
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  kubernetesVersion: 1.20.11
+  masterPublicName: api.kops-m2m-cluster.k8s.local
+  networkCIDR: 172.20.0.0/16
+  networking:
+    calico: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+  - 0.0.0.0/0
+  subnets:
+  - cidr: 172.20.32.0/19
+    name: us-east-1a
+    type: Private
+    zone: us-east-1a
+  - cidr: 172.20.64.0/19
+    name: us-east-1b
+    type: Private
+    zone: us-east-1b
+  - cidr: 172.20.0.0/22
+    name: utility-us-east-1a
+    type: Utility
+    zone: us-east-1a
+  - cidr: 172.20.4.0/22
+    name: utility-us-east-1b
+    type: Utility
+    zone: us-east-1b
+  topology:
+    dns:
+      type: Public
+    masters: private
+    nodes: private
+---
+# Master Nodes 1A-1
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2021-11-23T14:59:17Z"
+  labels:
+    kops.k8s.io/cluster: kops-m2m-cluster.k8s.local
+  name: master-us-east-1a-1
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118
+  machineType: t3.medium
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-us-east-1a-1
+  role: Master
+  subnets:
+  - us-east-1a
+---
+# Master Nodes 1A-2
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2021-11-23T14:59:17Z"
+  labels:
+    kops.k8s.io/cluster: kops-m2m-cluster.k8s.local
+  name: master-us-east-1a-2
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118
+  machineType: t3.medium
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-us-east-1a-2
+  role: Master
+  subnets:
+  - us-east-1a
+---
+# Master Nodes 1B-1
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2021-11-23T14:59:17Z"
+  labels:
+    kops.k8s.io/cluster: kops-m2m-cluster.k8s.local
+  name: master-us-east-1b-1
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118
+  machineType: t3.medium
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-us-east-1b-1
+  role: Master
+  subnets:
+  - us-east-1b
+---
+# Nodes
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2021-11-23T14:59:18Z"
+  labels:
+    kops.k8s.io/cluster: kops-m2m-cluster.k8s.local
+  name: nodes
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118
+  machineType: t3.medium
+  maxSize: 10
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: nodes
+  role: Node
+  subnets:
+  - us-east-1a
+  - us-east-1b
